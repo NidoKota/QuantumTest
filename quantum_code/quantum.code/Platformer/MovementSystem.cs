@@ -1,26 +1,29 @@
-﻿namespace Quantum.Platformer;
+﻿using Photon.Deterministic;
 
-public unsafe class MovementSystem : SystemMainThreadFilter<MovementSystem.Filter>
+namespace Quantum.Platformer
 {
-    public struct Filter
+    public unsafe class MovementSystem : SystemMainThreadFilter<MovementSystem.Filter>
     {
-        public EntityRef Entity;
-        public CharacterController3D* CharacterController;
-    }
-    
-    public override void Update(Frame f, ref Filter filter)
-    {
-        Input input = default;
-        if(f.Unsafe.TryGetPointer(filter.Entity, out PlayerLink* playerLink))
+        public struct Filter
         {
-            input = *f.GetPlayerInput(playerLink->Player);
+            public EntityRef Entity;
+            public CharacterController3D* CharacterController;
         }
 
-        if (input.Jump.WasPressed)
+        public override void Update(Frame f, ref Filter filter)
         {
-            filter.CharacterController->Jump(f);
-        }
+            Input input = default;
+            if (f.Unsafe.TryGetPointer(filter.Entity, out PlayerLink* playerLink))
+            {
+                input = *f.GetPlayerInput(playerLink->Player);
+            }
 
-        filter.CharacterController->Move(f, filter.Entity, input.Direction.XOY);
+            if (input.Jump.WasPressed)
+            {
+                filter.CharacterController->Jump(f);
+            }
+
+            filter.CharacterController->Move(f, filter.Entity, new FPVector3(input.Direction.Y, 0, input.Direction.X));
+        }
     }
 }
